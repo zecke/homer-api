@@ -68,6 +68,65 @@ CREATE INDEX webrtc_capture_correlation ON "webrtc_capture" (correlation_id);
 CREATE TABLE webrtc_capture_p2013082901() INHERITS (webrtc_capture);
 ALTER TABLE webrtc_capture_p2013082901 ADD CONSTRAINT chk_webrtc_capture_p2013082901 CHECK (date < to_timestamp(1377734400)); 
 
+CREATE TABLE IF NOT EXISTS isup_capture_20150407 (
+  id BIGSERIAL NOT NULL,
+  date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  micro_ts bigint NOT NULL DEFAULT '0',
+  correlation_id varchar(256) NOT NULL DEFAULT '',
+  opc smallint NOT NULL DEFAULT 0,
+  dpc smallint NOT NULL DEFAULT 0,
+  called_number varchar(16) NOT NULL DEFAULT '',
+  called_ton smallint NOT NULL DEFAULT 0,
+  called_npi smallint NOT NULL DEFAULT 0,
+  called_inn smallint NOT NULL DEFAULT 0,
+  calling_number varchar(16) NOT NULL DEFAULT '',
+  calling_ton smallint NOT NULL DEFAULT 0,
+  calling_npi smallint NOT NULL DEFAULT 0,
+  calling_ni smallint NOT NULL DEFAULT 0,
+  calling_restrict smallint NOT NULL DEFAULT 0,
+  calling_screened smallint NOT NULL DEFAULT 0,
+  calling_category smallint NOT NULL DEFAULT 0,
+  cause_location smallint NOT NULL DEFAULT 0,
+  cause_itu_class smallint NOT NULL DEFAULT 0,
+  cause_itu_cause smallint NOT NULL DEFAULT 0,
+  event_num smallint NOT NULL DEFAULT 0,
+  hop_counter smallint NOT NULL DEFAULT 0,
+  nci_satellite smallint NOT NULL DEFAULT 0,
+  nci_continuity_check smallint NOT NULL DEFAULT 0,
+  nci_echo_device smallint NOT NULL DEFAULT 0,
+  fwc_nic smallint NOT NULL DEFAULT 0,
+  fwc_etem smallint NOT NULL DEFAULT 0,
+  fwc_iw smallint NOT NULL DEFAULT 0,
+  fwc_etei smallint NOT NULL DEFAULT 0,
+  fwc_isup smallint NOT NULL DEFAULT 0,
+  fwc_isup_pref smallint NOT NULL DEFAULT 0,
+  fwc_ia smallint NOT NULL DEFAULT 0,
+  fwc_sccpm smallint NOT NULL DEFAULT 0,
+  transport_medium smallint NOT NULL DEFAULT 0,
+  user_coding_standard smallint NOT NULL DEFAULT 0,
+  user_transfer_cap smallint NOT NULL DEFAULT 0,
+  user_transfer_mode smallint NOT NULL DEFAULT 0,
+  user_transfer_rate smallint NOT NULL DEFAULT 0,
+  user_layer1_ident smallint NOT NULL DEFAULT 0,
+  user_layer1_proto smallint NOT NULL DEFAULT 0,
+  source_ip varchar(60) NOT NULL DEFAULT '',
+  source_port integer NOT NULL DEFAULT 0,
+  destination_ip varchar(60) NOT NULL DEFAULT '',
+  destination_port integer NOT NULL DEFAULT 0,
+  proto integer NOT NULL DEFAULT 0,
+  family smallint DEFAULT NULL,
+  type integer NOT NULL DEFAULT 0,
+  node varchar(125) NOT NULL DEFAULT '',
+  msg varchar(1500) NOT NULL DEFAULT '',
+  PRIMARY KEY (id,date)
+);
+
+CREATE INDEX isup_capture_20150407_date ON "isup_capture_20150407" (date);
+CREATE INDEX isup_capture_20150407_correlation ON "isup_capture_20150407" (correlation_id);
+CREATE INDEX isup_capture_20150407_called_number ON "isup_capture_20150407" (called_number);
+CREATE INDEX isup_capture_20150407_calling_number ON "isup_capture_20150407" (calling_number);
+CREATE TABLE isup_capture_20150407_p2013082901() INHERITS (isup_capture_20150407);
+ALTER TABLE isup_capture_20150407_p2013082901 ADD CONSTRAINT chk_isup_capture_20150407_p2013082901 CHECK (date < to_timestamp(1377734400));
 
 CREATE TABLE IF NOT EXISTS rtcp_capture (
   id BIGSERIAL NOT NULL,
