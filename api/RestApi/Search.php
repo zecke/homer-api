@@ -27,6 +27,347 @@
 
 namespace RestApi;
 
+function var_error_log( $object=null ){
+    ob_start();                    // start buffer capture
+    var_dump( $object );           // dump the values
+    $contents = ob_get_contents(); // put the buffer into a variable
+    ob_end_clean();                // end capture
+    error_log( $contents );        // log contents of the result of var_dump( $object )
+}
+
+$isup_itu_cause_class = [
+    0x00 => "normal event",
+    0x01 => "normal event",
+    0x02 => "resource unavailable",
+    0x03 => "service or option not available",
+    0x04 => "service or option not implemented",
+    0x05 => "invalid message",
+    0x06 => "protocol error",
+    0x07 => "interworking",
+];
+
+$isup_cause_value = [
+    1 =>	"Unallocated (unassigned) number",
+    2 =>	"No route to specified transit network",
+    3 =>	"No route to destination",
+    4 =>	"Send special information tone",
+    5 =>	"Misdialled trunk prefix",
+    6 =>	"Channel unacceptable",
+    7 =>	"Call awarded and being delivered in an established channel",
+    8 =>	"Preemption",
+    9 =>	"Preemption - circuit reserved for reuse",
+    14 =>	"QoR: ported number", /* Add.1 */
+    16 =>	"Normal call clearing",
+    17 =>	"User busy",
+    18 =>	"No user responding",
+    19 =>	"No answer from user (user alerted)",
+    20 =>	"Subscriber absent",
+    21 =>	"Call rejected",
+    22 =>	"Number changed",
+    23 =>	"Redirection to new destination",
+    24 =>	"Call rejected due to failure at the destination", /* Amd.1 */
+    25 =>	"Exchange routing error",
+    26 =>	"Non-selected user clearing",
+    27 =>	"Destination out of order",
+    28 =>	"Invalid number format (address incomplete)",
+    29 =>	"Facility rejected",
+    30 =>	"Response to STATUS ENQUIRY",
+    31 =>	"Normal, unspecified",
+    34 =>	"No circuit/channel available",
+    38 =>	"Network out of order",
+    39 =>	"Permanent frame mode connection out of service",
+    40 =>	"Permanent frame mode connection operational",
+    41 =>	"Temporary failure",
+    42 =>	"Switching equipment congestion",
+    43 =>	"Access information discarded",
+    44 =>	"Requested circuit/channel not available",
+    46 =>	"Precedence call blocked",
+    47 =>	"Resource unavailable, unspecified",
+    49 =>	"Quality of service not available",
+    50 =>	"Requested facility not subscribed",
+    53 =>	"Outgoing calls barred within CUG",
+    55 =>	"Incoming calls barred within CUG",
+    57 =>	"Bearer capability not authorized",
+    58 =>	"Bearer capability not presently available",
+    62 =>	"Inconsistency in designated outgoing access information and subscriber class",
+    63 =>	"Service or option not available, unspecified",
+    65 =>	"Bearer capability not implemented",
+    66 =>	"Channel type not implemented",
+    69 =>	"Requested facility not implemented",
+    70 =>	"Only restricted digital information bearer capability is available",
+    79 =>	"Service or option not implemented, unspecified",
+    81 =>	"Invalid call reference value",
+    82 =>	"Identified channel does not exist",
+    83 =>	"A suspended call exists, but this call identity does not",
+    84 =>	"Call identity in use",
+    85 =>	"No call suspended",
+    86 =>	"Call having the requested call identity has been cleared",
+    87 =>	"User not member of CUG",
+    88 =>	"Incompatible destination",
+    90 =>	"Non-existent CUG",
+    91 =>	"Invalid transit network selection",
+    95 =>	"Invalid message, unspecified",
+    96 =>	"Mandatory information element is missing",
+    97 =>	"Message type non-existent or not implemented",
+    98 =>	"Message not compatible with call state or message type non-existent or not implemented",
+    99 =>	"Information element /parameter non-existent or not implemented",
+    100 =>	"Invalid information element contents",
+    101 =>	"Message not compatible with call state",
+    102 =>	"Recovery on timer expiry",
+    103 =>	"Parameter non-existent or not implemented, passed on",
+    110 =>	"Message with unrecognized parameter, discarded",
+    111 =>	"Protocol error, unspecified",
+    127 =>	"Interworking, unspecified",
+];
+
+$isup_cause_std = [
+    0x00 => "ITU-T",
+    0x01 => "ISO/IEC",
+    0x02 => "National",
+    0x03 => "Specific",
+];
+
+$isup_cause_location = [
+    0x0 => "user (U)",
+    0x01 => "private network serving the local user (LPN)",
+    0x02 => "public network serving the local user (LN)",
+    0x03 => "transit network (TN)",
+    0x04 => "public network serving the remote user (RLN)",
+    0x05 => "private network serving the remote user (RPN)",
+    0x07 => "international network (INTL)",
+    0x0A => "network beyond interworking point (BI)",
+];
+
+$isup_event_info  = [
+    0x01 => "ALERTING",
+    0x02 => "PROGRESS",
+    0x03 => "in-band",
+    0x04 => "call forwarded on busy",
+    0x05 => "call forwarded on no reply",
+    0x06 => "call forwarded unconditional",
+];
+
+$isup_nai_vals  = [
+    0x00 => "spare",
+    0x01 => "subscriber number (national use)",
+    0x02 => "unknown (national use)",
+    0x03 => "national (significant) number",
+    0x04 => "international number",
+    0x05 => "network-specific number (national use)",
+    0x06 => "network routing number in national (significant) number format (national use)",
+    0x07 => "network routing number in network-specific number format (national use)",
+    0x08 => "network routing number concatenated with Called Directory Number (national use)",
+];
+
+$isup_inn_vals  = [
+    0x00 => "routing to internal network number allowed",
+    0x01 => "routing to internal network number not allowed",
+];
+
+$isup_ni_vals  = [
+    0x00 => "complete",
+    0x01 => "incomplete",
+];
+
+$isup_npi_vals  = [
+    0x00 => "spare",
+    0x01 => "ISDN (Telephony) numbering plan (ITU-T Recommendation E.164)",
+    0x02 => "spare",
+    0x03 => "Data numbering plan (ITU-T Recommendation X.121) (national use)",
+    0x04 => "Telex numbering plan (ITU-T Recommendation F.69) (national use)",
+    0x05 => "reserved for national use",
+    0x06 => "reserved for national use",
+];
+
+$isup_restrict_vals  = [
+    0x00 => "presentation allowed",
+    0x01 => "presentation restricted",
+    0x02 => "address not available (Note 1) (national use)",
+    0x03 => "reserved for restriction by the network",
+];
+
+$isup_screened_vals  = [
+    0x00 =>	"reserved (Note 2)",
+    0x01 => "user provided, verified and passed",
+    0x02 => "reserved (Note 2)",
+    0x03 => "network provided",
+];
+
+$isup_calling_cat_vals  = [
+    0x00 => "calling party's category unknown at this time (national use)",
+    0x01 => "operator, language French",
+    0x02 => "operator, language English",
+    0x03 => "operator, language German",
+    0x04 => "operator, language Russian",
+    0x05 => "operator, language Spanish",
+    0x09 => "reserved (see ITU-T Recommendation Q.104) (Note) (national use)",
+    0x0A => "ordinary calling subscriber",
+    0x0B => "calling subscriber with priority",
+    0x0C => "data call (voice band data)",
+    0x0D => "test call",
+    0x0E => "spare",
+    0x0F => "payphone",
+];
+
+$isup_nci_sat_vals  = [
+    0x00 => "no satellite circuit in the connection",
+    0x01 => "one satellite circuit in the connection",
+    0x02 => "two satellite circuits in the connection",
+    0x03 => "spare",
+];
+
+$isup_nci_con_vals  = [
+    0x00 => "continuity check not required",
+    0x01 => "continuity check required on this circuit",
+    0x02 => "continuity check performed on a previous circuit",
+    0x03 => "spare",
+];
+
+$isup_nci_echo_vals  = [
+    0x00 => "outgoing echo control device not included",
+    0x01 => "outgoing echo control device included",
+];
+
+// Forward call indicators National/international call indicator
+$isup_fwc_nic_vals  = [
+    0x00 => "call to be treated as a national call",
+    0x01 => "call to be treated as an international call",
+];
+
+// End-to-end method indicator
+$isup_fwc_etem_vals  = [
+    0x00 => "no end-to-end method available (only link-by-link method available)",
+    0x01 => "pass-along method available (national use)",
+    0x02 => "SCCP method available",
+    0x03 => "pass-along and SCCP methods available (national use)",
+];
+
+// Interworking indicator
+$isup_fwc_iw_vals  = [
+    0x00 => "no interworking encountered (No. 7 signalling all the way)",
+    0x01 => "interworking encountered",
+];
+
+// End-to-end information indicator
+$isup_fwc_etei_vals  = [
+    0x00 => "no end-to-end information available",
+    0x01 => "end-to-end information available",
+];
+
+// ISDN user part indicator
+$isup_fwc_isup_vals  = [
+    0x00 => "ISDN user part not used all the way",
+    0x01 => "ISDN user part used all the way",
+];
+
+// ISDN user part preference indicator
+$isup_fwc_isup_pref_vals  = [
+    0x00 => "ISDN user part preferred all the way",
+    0x01 => "ISDN user part not required all the way",
+    0x02 => "ISDN user part required all the way",
+    0x03 => "spare",
+];
+
+// ISDN access indicator
+$isup_fwc_ia_vals  = [
+    0x00 => "originating access non-ISDN",
+    0x01 => "originating access ISD",
+];
+
+// SCCP method indicator
+$isup_fwc_sccpm_vals  = [
+    0x00 => "no indication",
+    0x01 => "connectionless method available (national use)",
+    0x02 => "connection oriented method available",
+    0x03 => "connectionless and connection oriented methods available (national use)",
+];
+
+// Transmission medium
+$isup_trans_medium_vals  = [
+    0x00 => "speech",
+    0x01 => "spare",
+    0x02 => "64 kbit/s unrestricted",
+    0x03 => "3.1 kHz audio",
+    0x04 => "reserved for alternate speech (service 2)/64 kbit/s unrestricted (service 1)",
+    0x05 => "reserved for alternate 64 kbit/s unrestricted (service 1)/speech (service 2)",
+    0x06 => "64 kbit/s preferred",
+    0x07 => "2 × 64 kbit/s unrestricted",
+    0x08 => "384 kbit/s unrestricted",
+    0x09 => "1536 kbit/s unrestricted",
+    0x0A => "1920 kbit/s unrestricted",
+    0x10 => "3 × 64 kbit/s unrestricted",
+    0x11 => "4 × 64 kbit/s unrestricted",
+    0x12 => "5 × 64 kbit/s unrestricted",
+    0x13 => "spare",
+    0x14 => "7 × 64 kbit/s unrestricted",
+    0x15 => "8 × 64 kbit/s unrestricted",
+    0x16 => "9 × 64 kbit/s unrestricted",
+    0x17 => "10 × 64 kbit/s unrestricted",
+    0x18 => "11 × 64 kbit/s unrestricted",
+    0x19 => "12 × 64 kbit/s unrestricted",
+    0x1A => "13 × 64 kbit/s unrestricted",
+    0x1B => "14 × 64 kbit/s unrestricted",
+    0x1C => "15 × 64 kbit/s unrestricted",
+    0x1D => "16 × 64 kbit/s unrestricted",
+    0x1E => "17 × 64 kbit/s unrestricted",
+    0x1F => "18 × 64 kbit/s unrestricted",
+    0x20 => "19 × 64 kbit/s unrestricted",
+    0x21 => "20 × 64 kbit/s unrestricted",
+    0x22 => "21 × 64 kbit/s unrestricted",
+    0x23 => "22 × 64 kbit/s unrestricted",
+    0x24 => "23 × 64 kbit/s unrestricted",
+    0x25 => "spare",
+    0x26 => "25 × 64 kbit/s unrestricted",
+    0x27 => "26 × 64 kbit/s unrestricted",
+    0x28 => "27 × 64 kbit/s unrestricted",
+    0x29 => "28 × 64 kbit/s unrestricted",
+    0x2A => "29 × 64 kbit/s unrestricted",
+];
+
+// Q931 bearer capabilities
+$q931_cstd_vals   = [
+    0x00 => "ITU-T standardized coding as described below",
+    0x01 => "ISO/IEC Standard",
+    0x02 => "National standard",
+    0x03 => "Standard defined for the network (either public or private) present on the network side of the interface",
+];
+
+$q931_trs_cap_vals  = [
+    0x00 => "Speech",
+    0x08 => "Unrestricted digital information",
+    0x09 => "Restricted digital information",
+    0x10 => "3.1 kHz audio",
+    0x11 => "Unrestricted digital information with tones/announcements (Note 2)",
+    0x18 => "Video",
+];
+
+$q931_trs_mde_vals  = [
+    0x00 => "Circuit mode",
+    0x01 => "Packet mode",
+];
+
+$q931_trs_rte_vals  = [
+    0x00 => "packet-mode calls",
+    0x10 => "64 kbit/s",
+    0x11 => "2 × 64 kbit/s",
+    0x13 => "384 kbit/s",
+    0x15 => "1536 kbit/s",
+    0x17 => "1920 kbit/s",
+    0x18 => "Multirate (64 kbit/s base rate)",
+];
+
+$q931_usr_info_vals  = [
+    0x00 => "ITU-T standardized rate adaption V.110, I.460 and X.30. This implies the presence of octet 5a and optionally octets 5b, 5c and 5d as defined below",
+    0x02 => "G.711 u-law",
+    0x03 => "G.711 a-law",
+    0x04 => "G.721 ADPCM",
+    0x05 => "H.221 and H.242",
+    0x06 => "H.223 and H.245",
+    0x07 => "Non-ITU-T standardized rate adaption",
+    0x08 => "V.120",
+    0x09 => "X.31",
+];
+
 class Search {
 
     protected $_instance = array();
