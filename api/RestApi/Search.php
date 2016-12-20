@@ -378,7 +378,7 @@ class Search {
     
     function __construct()
     {
-	$this->query_types = array("call", "registration", "rest");
+	$this->query_types = array("call", "registration", "isup", "rest");
 	if(SYSLOG_ENABLE == 1) openlog("homerlog", LOG_PID | LOG_PERROR, LOG_LOCAL0);
     }
 
@@ -726,13 +726,16 @@ class Search {
 
         $trans['call'] = getVar('call', false, $param['transaction'], 'bool');
         $trans['registration'] = getVar('registration', false, $param['transaction'], 'bool');
+        $trans['isup'] = getVar('isup', false, $param['transaction'], 'bool');
         $trans['rest'] = getVar('rest', false, $param['transaction'], 'bool');
 
+
 	/* default transaction */
-	if(!$trans['call'] && !$trans['registration'] && !$trans['rest']) {
+	if(!$trans['call'] && !$trans['registration'] && !$trans['rest'] && !$trans['isup']) {
 		$trans['rest'] = true;
 		$trans['registration'] = true;
 		$trans['call'] = true;
+		$trans['isup'] = false;
 	}
 	 
 	if(isset($param['receive']) && isset($param['receive']['body']))
@@ -748,7 +751,7 @@ class Search {
         $time['to_ts'] = round($time['to']/1000);
 
         /* search fields */
-        $search['from_user'] = getVar('from_user', NULL, $param['search'], 'string');
+        $search['calling_number'] = getVar('from_user', NULL, $param['search'], 'string');
         $search['from_domain'] = getVar('from_domain', NULL, $param['search'], 'string');
         $search['to_user'] = getVar('to_user', NULL, $param['search'], 'string');
         $search['to_domain'] = getVar('to_domain', NULL, $param['search'], 'string');
@@ -825,7 +828,7 @@ class Search {
         $callwhere = array();
         $callwhere = generateWhere($search, $and_or, $db, $b2b);
         
-        $fields = FIELDS_CAPTURE;
+        $fields = ISUP_FIELDS_CAPTURE;
 
 
         $nodes = array();
@@ -841,7 +844,6 @@ class Search {
         $layerHelper['fields'] = array();
 
         
-        $layerHelper['table']['base'] = "sip_capture";
         $layerHelper['where']['type'] = $and_or ? "OR" : "AND";
         $layerHelper['where']['param'] = $callwhere;
         $layerHelper['time'] = $time;                                        
@@ -861,6 +863,15 @@ class Search {
 		    if($trans[$query_type]) {
 			if($limit < 1) break;
 
+			if ($query_type == 'isup') {
+				$layerHelper['table']['base'] = "isup_capture";
+				$layerHelper['table']['type'] = "all";
+			} else {
+				$layerHelper['table']['base'] = "sip_capture";
+				$layerHelper['table']['type'] = $query_type;
+			}
+			$layerHelper['table']['timestamp'] = $tkey;
+
 			$layerHelper['values'] = array();
 			
 		        if(!$count)
@@ -875,10 +886,9 @@ class Search {
 		        	$layerHelper['group']['by'] = "msg";
 			}
 
-			$layerHelper['table']['type'] = $query_type;
-                        $layerHelper['table']['timestamp'] = $tkey;
                         $layerHelper['order']['limit'] = $limit;                        
 
+                        var_error_log($layerHelper);
 			$query = $layer->querySearchData($layerHelper);			
 			$noderows = $db->loadObjectArray($query);
 			if(SYSLOG_ENABLE == 1) syslog(LOG_WARNING,"Search query: ".$query);
@@ -1359,13 +1369,15 @@ class Search {
         $callid = getVar('callid', "", $param['search'], 'string');
         $trans['call'] = getVar('call', false, $param['transaction'], 'bool');
         $trans['registration'] = getVar('registration', false, $param['transaction'], 'bool');
+        $trans['isup'] = getVar('isup', false, $param['transaction'], 'bool');
         $trans['rest'] = getVar('rest', false, $param['transaction'], 'bool');
         
         /* default transaction */
-	if(!$trans['call'] && !$trans['registration'] && !$trans['rest']) {
+	if(!$trans['call'] && !$trans['registration'] && !$trans['rest'] && !$trans['isup']) {
 		$trans['rest'] = true;
 		$trans['registration'] = true;
 		$trans['call'] = true;
+                $trans['isup'] = true;
 	}
 
 	$location = $param['location'];
@@ -1401,7 +1413,6 @@ class Search {
         $layerHelper['time'] = $time;
         $layerHelper['fields']['msg'] = true;                        
         if($uniq) $layerHelper['fields']['md5msg'] = true;
-        $layerHelper['table']['base'] = "sip_capture";
         $layerHelper['where']['type'] = "AND";
         $layerHelper['where']['param'] = $callwhere;        
 
@@ -1412,13 +1423,21 @@ class Search {
                 foreach($this->query_types as $query_type) {
                     if($trans[$query_type]) {
                         if($limit < 1) break;
-                        
+
                         $layerHelper['values'] = array();
-                        $layerHelper['values'][] = FIELDS_CAPTURE;
+			if ($query_type == 'isup') {
+				$layerHelper['table']['base'] = "isup_capture";
+				$layerHelper['table']['type'] = "all";
+                                $layerHelper['values'][] = ISUP_FIELDS_CAPTURE;
+			} else {
+				$layerHelper['table']['base'] = "sip_capture";
+				$layerHelper['table']['type'] = $query_type;
+                                $layerHelper['values'][] = FIELDS_CAPTURE;
+			}
+                        
                         $layerHelper['values'][] = "'".$query_type."' as trans";
                         $layerHelper['values'][] = "'".$node['name']."' as dbnode";
                         
-                        $layerHelper['table']['type'] = $query_type;
                         $layerHelper['table']['timestamp'] = $tkey;
                         $layerHelper['order']['limit'] = $limit;
                         
